@@ -208,24 +208,41 @@ class Autocomplete<T extends Object> extends StatefulWidget {
 
 class _AutocompleteState<T extends Object> extends State<Autocomplete<T>> {
   int? selectedIndex;
-  int? numberOfOptions;
+  Iterable<T>? currentOptions;
+  AutocompleteOnSelected<T>? wasSelected;
 
   @override
   Widget build(BuildContext context) {
     return Shortcuts(
       shortcuts: <LogicalKeySet, Intent>{
-        LogicalKeySet(LogicalKeyboardKey.arrowDown): NextItemIntent(),
+        LogicalKeySet(LogicalKeyboardKey.arrowDown): const _NextItemIntent(),
+        LogicalKeySet(LogicalKeyboardKey.arrowUp): const _PreviousItemIntent(),
+        LogicalKeySet(LogicalKeyboardKey.enter): const _SelectItemIntent(),
       },
       child: Actions(
         actions: <Type, Action<Intent>>{
-          NextItemIntent: CallbackAction<NextItemIntent>(
-            onInvoke: (NextItemIntent intent) => setState(() {
-              if (selectedIndex == null || selectedIndex == numberOfOptions) {
+          _NextItemIntent: CallbackAction<_NextItemIntent>(
+            onInvoke: (_NextItemIntent intent) => setState(() {
+              if (selectedIndex == null || selectedIndex == currentOptions!.length) {
                 selectedIndex = 0;
               } else {
                 selectedIndex = selectedIndex! + 1;
               }
             }),
+          ),
+          _PreviousItemIntent: CallbackAction<_PreviousItemIntent>(
+            onInvoke: (_PreviousItemIntent intent) => setState(() {
+              if (selectedIndex == null || selectedIndex == 0) {
+                selectedIndex = currentOptions!.length - 1;
+              } else {
+                selectedIndex = selectedIndex! - 1;
+              }
+            }),
+          ),
+          _SelectItemIntent: CallbackAction<_SelectItemIntent>(
+            onInvoke: (_SelectItemIntent intent) {
+              wasSelected!(currentOptions!.elementAt(selectedIndex!));
+            }
           ),
         },
         child: RawAutocomplete<T>(
@@ -233,7 +250,9 @@ class _AutocompleteState<T extends Object> extends State<Autocomplete<T>> {
           fieldViewBuilder: widget.fieldViewBuilder,
           optionsBuilder: widget.optionsBuilder,
           optionsViewBuilder: widget.optionsViewBuilder ?? (BuildContext context, AutocompleteOnSelected<T> onSelected, Iterable<T> options) {
-            numberOfOptions = options.length;
+            currentOptions ??= options;
+            wasSelected ??= onSelected;
+
             return _AutocompleteOptions<T>(
               displayStringForOption: widget.displayStringForOption,
               onSelected: onSelected,
@@ -248,8 +267,16 @@ class _AutocompleteState<T extends Object> extends State<Autocomplete<T>> {
   }
 }
 
-class NextItemIntent extends Intent {
-  const NextItemIntent();
+class _NextItemIntent extends Intent {
+  const _NextItemIntent();
+}
+
+class _PreviousItemIntent extends Intent {
+  const _PreviousItemIntent();
+}
+
+class _SelectItemIntent extends Intent {
+  const _SelectItemIntent();
 }
 
 // The default Material-style Autocomplete text field.
