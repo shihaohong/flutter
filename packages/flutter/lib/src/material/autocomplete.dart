@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import 'ink_well.dart';
 import 'material.dart';
 import 'text_form_field.dart';
+import 'theme.dart';
 
 /// {@macro flutter.widgets.RawAutocomplete.RawAutocomplete}
 ///
@@ -158,7 +160,7 @@ import 'text_form_field.dart';
 ///
 ///  * [RawAutocomplete], which is what Autocomplete is built upon, and which
 ///    contains more detailed examples.
-class Autocomplete<T extends Object> extends StatelessWidget {
+class Autocomplete<T extends Object> extends StatefulWidget {
   /// Creates an instance of [Autocomplete].
   const Autocomplete({
     Key? key,
@@ -201,21 +203,53 @@ class Autocomplete<T extends Object> extends StatelessWidget {
   }
 
   @override
+  _AutocompleteState<T> createState() => _AutocompleteState<T>();
+}
+
+class _AutocompleteState<T extends Object> extends State<Autocomplete<T>> {
+  int? selectedIndex;
+  int? numberOfOptions;
+
+  @override
   Widget build(BuildContext context) {
-    return RawAutocomplete<T>(
-      displayStringForOption: displayStringForOption,
-      fieldViewBuilder: fieldViewBuilder,
-      optionsBuilder: optionsBuilder,
-      optionsViewBuilder: optionsViewBuilder ?? (BuildContext context, AutocompleteOnSelected<T> onSelected, Iterable<T> options) {
-        return _AutocompleteOptions<T>(
-          displayStringForOption: displayStringForOption,
-          onSelected: onSelected,
-          options: options,
-        );
+    return Shortcuts(
+      shortcuts: <LogicalKeySet, Intent>{
+        LogicalKeySet(LogicalKeyboardKey.arrowDown): NextItemIntent(),
       },
-      onSelected: onSelected,
+      child: Actions(
+        actions: <Type, Action<Intent>>{
+          NextItemIntent: CallbackAction<NextItemIntent>(
+            onInvoke: (NextItemIntent intent) => setState(() {
+              if (selectedIndex == null || selectedIndex == numberOfOptions) {
+                selectedIndex = 0;
+              } else {
+                selectedIndex = selectedIndex! + 1;
+              }
+            }),
+          ),
+        },
+        child: RawAutocomplete<T>(
+          displayStringForOption: widget.displayStringForOption,
+          fieldViewBuilder: widget.fieldViewBuilder,
+          optionsBuilder: widget.optionsBuilder,
+          optionsViewBuilder: widget.optionsViewBuilder ?? (BuildContext context, AutocompleteOnSelected<T> onSelected, Iterable<T> options) {
+            numberOfOptions = options.length;
+            return _AutocompleteOptions<T>(
+              displayStringForOption: widget.displayStringForOption,
+              onSelected: onSelected,
+              options: options,
+              selectedIndex: selectedIndex,
+            );
+          },
+          onSelected: widget.onSelected,
+        ),
+      ),
     );
   }
+}
+
+class NextItemIntent extends Intent {
+  const NextItemIntent();
 }
 
 // The default Material-style Autocomplete text field.
@@ -252,6 +286,7 @@ class _AutocompleteOptions<T extends Object> extends StatelessWidget {
     required this.displayStringForOption,
     required this.onSelected,
     required this.options,
+    this.selectedIndex,
   }) : super(key: key);
 
   final AutocompleteOptionToString<T> displayStringForOption;
@@ -259,6 +294,8 @@ class _AutocompleteOptions<T extends Object> extends StatelessWidget {
   final AutocompleteOnSelected<T> onSelected;
 
   final Iterable<T> options;
+
+  final int? selectedIndex;
 
   @override
   Widget build(BuildContext context) {
@@ -273,14 +310,23 @@ class _AutocompleteOptions<T extends Object> extends StatelessWidget {
             itemCount: options.length,
             itemBuilder: (BuildContext context, int index) {
               final T option = options.elementAt(index);
+
+              Widget child = Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(displayStringForOption(option)),
+              );
+              if (index == selectedIndex) {
+                child = ColoredBox(
+                  color: Theme.of(context).highlightColor,
+                  child: child,
+                );
+              }
+
               return InkWell(
                 onTap: () {
                   onSelected(option);
                 },
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(displayStringForOption(option)),
-                ),
+                child: child,
               );
             },
           ),
