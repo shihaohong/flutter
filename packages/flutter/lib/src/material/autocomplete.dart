@@ -169,6 +169,7 @@ class Autocomplete<T extends Object> extends StatefulWidget {
     this.fieldViewBuilder = _defaultFieldViewBuilder,
     this.onSelected,
     this.optionsViewBuilder,
+    this.initialValue,
   }) : assert(displayStringForOption != null),
        assert(optionsBuilder != null),
        super(key: key);
@@ -193,6 +194,9 @@ class Autocomplete<T extends Object> extends StatefulWidget {
   /// If not provided, will build a standard Material-style list of results by
   /// default.
   final AutocompleteOptionsViewBuilder<T>? optionsViewBuilder;
+
+  /// {@macro flutter.widgets.RawAutocomplete.initialValue}
+  final TextEditingValue? initialValue;
 
   static Widget _defaultFieldViewBuilder(BuildContext context, TextEditingController textEditingController, FocusNode focusNode, VoidCallback onFieldSubmitted) {
     return _AutocompleteField(
