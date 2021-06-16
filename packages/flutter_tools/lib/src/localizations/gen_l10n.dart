@@ -187,9 +187,9 @@ String _generatePluralMethod(Message message, String translationForMessage) {
 
   final Placeholder countPlaceholder = message.getCountPlaceholder();
   const Map<String, String> pluralIds = <String, String>{
-    '=0': 'zero',
-    '=1': 'one',
-    '=2': 'two',
+    'zero': 'zero',
+    'one': 'one',
+    'two': 'two',
     'few': 'few',
     'many': 'many',
     'other': 'other',

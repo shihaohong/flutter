@@ -2115,14 +2115,14 @@ import 'output-localization-file_en.dart' deferred as output-localization-file_e
     testWithoutContext('check for string interpolation rules - plurals', () {
       const String enArbCheckList = '''
 {
-  "first": "{count,plural, =0{test {count} test} =1{哈{count}哈} =2{m{count}m} few{_{count}_} many{{count} test} other{{count}m}",
+  "first": "{count,plural, zero{test {count} test} one{哈{count}哈} two{m{count}m} few{_{count}_} many{{count} test} other{{count}m}",
   "@first": {
     "description": "First set of plural messages to test.",
     "placeholders": {
       "count": {}
     }
   },
-  "second": "{count,plural, =0{test {count}} other{ {count}}",
+  "second": "{count,plural, zero{test {count}} other{ {count}}",
   "@second": {
     "description": "Second set of plural messages to test.",
     "placeholders": {
@@ -2136,8 +2136,8 @@ import 'output-localization-file_en.dart' deferred as output-localization-file_e
       // generated code for use of '${variable}' vs '$variable'
       const String esArbCheckList = '''
 {
-  "first": "{count,plural, =0{test {count} test} =1{哈{count}哈} =2{m{count}m} few{_{count}_} many{{count} test} other{{count}m}",
-  "second": "{count,plural, =0{test {count}} other{ {count}}"
+  "first": "{count,plural, zero{test {count} test} one{哈{count}哈} two{m{count}m} few{_{count}_} many{{count} test} other{{count}m}",
+  "second": "{count,plural, zero{test {count}} other{ {count}}"
 }
 ''';
 
